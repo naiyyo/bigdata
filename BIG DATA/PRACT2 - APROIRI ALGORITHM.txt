@@ -1,0 +1,45 @@
+import pandas as pd
+import numpy as np
+from mlxtend.frequent_patterns import apriori, association_rules
+from mlxtend.preprocessing import TransactionEncoder
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+transactions = [['milk', 'bread', 'butter'],
+               ['bread', 'butter'],
+               ['milk', 'bread'],
+               ['milk', 'butter'],
+               ['bread', 'butter']]
+
+
+te = TransactionEncoder()
+te_ary = te.fit(transactions).transform(transactions)
+df = pd.DataFrame(te_ary, columns=te.columns_)
+
+frequent_itemsets = apriori(df, min_support=0.02, use_colnames=True)
+rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.2)
+
+
+print("Frequent Itemsets:")
+print(frequent_itemsets.head(10))
+print("\nAssociation Rules:")
+print(rules.head(10))
+
+
+item_frequencies = df.sum(axis=0).sort_values(ascending=False)
+plt.figure(figsize=(10, 6))
+item_frequencies.head(20).plot(kind='bar', color=sns.color_palette("pastel", 8))
+plt.title('Relative Item Frequency Plot')
+plt.xlabel('Item')
+plt.ylabel('Item Frequency (Relative)')
+plt.show()
+
+
+itemsets_len2 = apriori(df, min_support=0.02, max_len=2, use_colnames=True)
+itemsets_len3 = apriori(df, min_support=0.02, max_len=3, use_colnames=True)
+print("\nFrequent Itemsets Length 2:")
+print(itemsets_len2.head(10))
+
+print("\nFrequent Itemsets Length 3:")
+print(itemsets_len3.head(10))

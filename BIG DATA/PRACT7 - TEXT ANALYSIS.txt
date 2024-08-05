@@ -1,0 +1,79 @@
+Using textanalysissample.txt :
+
+
+import pandas as pd
+import numpy as np
+from sklearn.feature_extraction.text import CountVectorizer
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import SnowballStemmer
+from textblob import TextBlob
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+
+
+with open("/content/textanalysissample.txt", "r") as file:
+ text = file.read()
+
+def preprocess_text(text):
+
+ text = text.replace("/", " ").replace("@", " ").replace("|", " ")
+
+ text = text.lower()
+
+ text = ''.join([i for i in text if not i.isdigit()])
+
+ tokens = word_tokenize(text)
+
+ tokens = [word for word in tokens if word not in stopwords.words('english')]
+
+
+ custom_stopwords = ["s", "company", "team"]
+ tokens = [word for word in tokens if word not in custom_stopwords]
+
+ tokens = [word for word in tokens if word.isalnum()]
+
+ stemmer = SnowballStemmer("english")
+ tokens = [stemmer.stem(word) for word in tokens]
+ return tokens
+
+
+cleaned_tokens = preprocess_text(text)
+
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform([' '.join(cleaned_tokens)])
+dtm = pd.DataFrame(X.toarray(), columns=vectorizer.get_feature_names_out())
+word_freq = dtm.sum().sort_values(ascending=False)
+
+
+print(word_freq.head(5))
+
+
+word_freq.head(5).plot(kind='bar', color='lightgreen', title='Top 5 most frequent words')
+plt.ylabel('Word frequencies')
+plt.show()
+
+wordcloud = WordCloud(width=800, height=400, max_words=100,
+background_color='white').generate_from_frequencies(word_freq)
+plt.figure(figsize=(10, 5))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis('off')
+plt.show()
+
+
+blob = TextBlob(text)
+sentiment = blob.sentiment
+print(f"Polarity: {sentiment.polarity}, Subjectivity: {sentiment.subjectivity}")
+
+
+sentiments = [TextBlob(sent).sentiment.polarity for sent in text.split('\n')]
+
+plt.figure(figsize=(10, 5))
+plt.hist(sentiments, bins=20, color='purple', edgecolor='black')
+plt.title('Sentiment Analysis')
+plt.xlabel('Sentiment Polarity')
+plt.ylabel('Frequency')
+plt.show()

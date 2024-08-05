@@ -1,0 +1,28 @@
+import pandas as pd
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+
+
+years_of_exp = [7, 5, 1, 3, 5, 8, 10, 12, 20, 2]
+salary_in_lakhs = [21, 13, 6, 8, 13, 22, 25, 27, 40, 7]
+employee_data = pd.DataFrame({'years_of_exp': years_of_exp, 'salary_in_lakhs': salary_in_lakhs})
+
+print(employee_data)
+
+
+X = employee_data['years_of_exp']
+y = employee_data['salary_in_lakhs']
+X = sm.add_constant(X) 
+
+model = sm.OLS(y, X).fit() 
+print(model.summary())
+
+
+plt.figure(figsize=(10, 6))
+plt.scatter(employee_data['years_of_exp'], employee_data['salary_in_lakhs'], color='blue', label='Data points')
+plt.plot(employee_data['years_of_exp'], model.predict(X), color='red', label='Fitted line')
+plt.title('Years of Experience vs Salary in Lakhs')
+plt.xlabel('Years of Experience')
+plt.ylabel('Salary in Lakhs')
+plt.legend()
+plt.show()

@@ -1,0 +1,42 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.svm import SVC
+from sklearn.preprocessing import StandardScaler
+
+
+np.random.seed(10111) 
+X = np.random.randn(20, 2) 
+y = np.array([-1]*10 + [1]*10) 
+
+
+X[y == 1] += 1
+
+
+plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.bwr, edgecolors='k', s=100)
+plt.title("Scatter Plot of Data")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.show()
+
+
+dat = pd.DataFrame(X, columns=['Feature1', 'Feature2'])
+dat['Target'] = y
+
+
+model = SVC(kernel='linear', C=10, random_state=10111)
+model.fit(dat[['Feature1', 'Feature2']], dat['Target'])
+
+print(model)
+
+xx, yy = np.meshgrid(np.linspace(X[:, 0].min() - 1, X[:, 0].max() + 1, 500),
+            np.linspace(X[:, 1].min() - 1, X[:, 1].max() + 1, 500))
+Z = model.decision_function(np.c_[xx.ravel(), yy.ravel()])
+Z = Z.reshape(xx.shape)
+
+plt.contourf(xx, yy, Z, cmap=plt.cm.bwr, alpha=0.3)
+plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.bwr, edgecolors='k', s=100)
+plt.title("SVM Decision Boundary")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.show()

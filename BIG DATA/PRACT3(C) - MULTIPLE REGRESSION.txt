@@ -1,0 +1,46 @@
+Using studentmarks.csv :
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+StudentData = pd.read_csv("/content/studentmarks.csv")
+print(StudentData.head())
+print(f"Number of rows: {len(StudentData)}")
+
+
+X = StudentData[['gre', 'gpa', 'rank']] 
+y = StudentData['admit'] 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+
+predict_reg = model.predict(X_test)
+print("Predicted values:")
+print(predict_reg)
+
+
+plt.figure(figsize=(15, 5))
+
+plt.subplot(1, 3, 1)
+
+sns.kdeplot(data=StudentData, x='gpa', hue='admit', fill=True)
+plt.title('Conditional Density Plot: GPA vs Admit')
+
+plt.subplot(1, 3, 2)
+sns.kdeplot(data=StudentData, x='gre', hue='admit', fill=True)
+plt.title('Conditional Density Plot: GRE vs Admit')
+
+
+plt.subplot(1, 3, 3)
+sns.kdeplot(data=StudentData, x='rank', hue='admit', fill=True)
+plt.title('Conditional Density Plot: Rank vs Admit')
+
+plt.tight_layout()
+plt.show()

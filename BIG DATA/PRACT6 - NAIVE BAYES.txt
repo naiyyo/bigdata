@@ -1,0 +1,66 @@
+Using sample1.csv : 
+
+import pandas as pd
+from sklearn.naive_bayes import CategoricalNB
+import numpy as np
+
+
+sample = pd.read_csv("/content/sample1.csv")
+print(sample.head())
+
+
+traindata = sample.iloc[0:14].copy()
+testdata = sample.iloc[14:15].copy()
+print(traindata)
+print(testdata)
+
+tprior = traindata['Enrolls'].value_counts(normalize=True)
+print(tprior)
+
+
+def compute_conditional_probabilities(column):
+   counts = pd.crosstab(traindata['Enrolls'], traindata[column])
+   counts = counts.div(counts.sum(axis=1), axis=0)
+   return counts
+
+ageCounts = compute_conditional_probabilities('Age')
+incomeCounts = compute_conditional_probabilities('Income')
+jsCounts = compute_conditional_probabilities('JobSatisfaction')
+desireCounts = compute_conditional_probabilities('Desire')
+print(ageCounts)
+print(incomeCounts)
+print(jsCounts)
+print(desireCounts)
+
+
+test_instance = testdata.iloc[0]
+
+prob_Yes = (ageCounts.loc['Yes', test_instance['Age']] *
+          incomeCounts.loc['Yes', test_instance['Income']] *
+          jsCounts.loc['Yes', test_instance['JobSatisfaction']] *
+          desireCounts.loc['Yes', test_instance['Desire']] *
+          tprior['Yes'])
+
+prob_No = (ageCounts.loc['No', test_instance['Age']] *
+         incomeCounts.loc['No', test_instance['Income']] *
+         jsCounts.loc['No', test_instance['JobSatisfaction']] *
+         desireCounts.loc['No', test_instance['Desire']] *
+         tprior['No'])
+print('Probability Yes:', prob_Yes)
+print('Probability No:', prob_No)
+
+predicted_result = 'Yes' if prob_Yes > prob_No else 'No'
+print('Predicted Result:', predicted_result)
+
+
+X_train = traindata[['Age', 'Income', 'JobSatisfaction', 'Desire']]
+y_train = traindata['Enrolls']
+X_test = testdata[['Age', 'Income', 'JobSatisfaction', 'Desire']]
+
+
+X_train_encoded = X_train.apply(lambda x: pd.factorize(x)[0])
+X_test_encoded = X_test.apply(lambda x: pd.factorize(x)[0])
+model = CategoricalNB()
+model.fit(X_train_encoded, y_train)
+results = model.predict(X_test_encoded)
+print('Model Prediction:', results[0])
